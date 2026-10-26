@@ -2,6 +2,7 @@
   "name": "desynced-behaviors",
   "private": true,
   "version": "0.1.0",
+  "type": "module",
   "description": "A code-first Desynced behavior toolkit",
   "scripts": {
     "check": "node scripts/build.mjs --check",
