@@ -1,0 +1,10 @@
+[project]
+name = "desynced-behaviors"
+version = "0.1.0"
+description = "Text-based Desynced Behavior library and build tools"
+requires-python = ">=3.14"
+dependencies = ["blz-desynced-toolkit"]
+
+# Use a known upstream commit until we deliberately update and retest it.
+[tool.uv.sources]
+blz-desynced-toolkit = { git = "https://github.com/johnfb/blz-desynced-toolkit.git", rev = "58d3acf53781ef10efc926e893b7ea3583bc24a4" }

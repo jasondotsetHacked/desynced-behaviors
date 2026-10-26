@@ -1,14 +1,16 @@
-# Behavior catalog
+# Behavior library
 
-One folder per reusable Behavior or small group of cooperating Behaviors.
+Each directory groups one working Behavior or a small set of cooperating Behaviors.
 
-| Behavior | Description | Status |
+| Project | Files | State |
 | --- | --- | --- |
-| [single-assembler-mall](single-assembler-mall/) | One assembler fills requested components in locked storage slots | Experimental |
+| [single-assembler-mall](single-assembler-mall/) | `storage.bsf` (assembler to follow) | Experimental; untested in game |
 
-Each Behavior folder should contain:
-- source `.js` or `.ts` files (one exported Behavior function per file);
-- a README with required components, register wiring, and an in-game test;
-- a note about what has or has not been tested.
+Conventions:
+- Keep editable logic in `.bsf`, not JavaScript or raw clipboard strings.
+- Add a README per project: purpose, required components, parameters/register wiring, limits, in-game test steps.
+- Keep `build/` as generated output; do not commit it.
+- Export and decompile any Behavior that behaves unexpectedly so we can compare actual game logic with source.
+- Never label a Behavior "working" based only on a successful compilation.
 
-Run `npm run build` from the repository root to create import strings for every source file. Commit source, not generated `*.asm.txt` files.
+Run `uv run python scripts/bsf.py lint` and `uv run python scripts/bsf.py build` at the repository root.

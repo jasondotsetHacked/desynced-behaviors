@@ -1,0 +1,8 @@
+# First BSF prototype: announce the first empty fixed item slot.
+# Target: the storage building itself (requires a Behavior Controller).
+# Game-data and in-game validation are still needed.
+behavior MallStorage():
+get_first_locked_0(Item=$Missing)
+set_reg(Value=$Missing, Target=@signal)
+wait(Time=15)
+restart()

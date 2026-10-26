@@ -1,47 +1,33 @@
-# Single Assembler Mall (experimental)
+# Single Assembler Mall
 
-A tiny two-Behavior mall: one storage advertises the first empty locked component slot, and one nearby assembler produces the requested component.
+**Status: experimental — storage side is a first BSF prototype, not yet tested in-game.** The assembler Behavior still needs to be authored and tested.
 
-## In-game setup
+## Goal
 
-1. Build a **storage** with a Behavior Controller and a few free inventory slots.
-2. Build an **assembler** with an Assembler component and a Behavior Controller.
-3. Put both on your logistics network. Supply production ingredients and have a way to move finished items (for example, logistics bots).
-4. In the storage, lock/fix **one empty slot per component** you want. Start with two different non-stackable components that the assembler can craft.
-5. Import `storage-missing.js.asm.txt` into the **storage** Behavior Controller. Link its `request` parameter (P1) to the storage's **Signal** register.
-6. Import `assembler-mall.js.asm.txt` into the **assembler** Behavior Controller. Set `storage` (P1) to the **storage building entity**. Link `production` (P2) to the Assembler component's **recipe/production input register**, not its missing-material display.
+One storage building acts as a wishlist: fixed/locked empty component slots describe what should be stocked. One general-purpose assembler reads the requested item, produces one, and transfers it back to storage.
 
-Build from repository root:
+## Plan
 
-```bash
-npm install
-npm run build
-```
+1. **Storage:** `storage.bsf` reads `Get First Locked Id` from its own storage and writes the result to the building's Signal register. Wait briefly and repeat.
+2. **Assembler (next):** read that Signal on the linked storage entity, check the requested item is craftable, set the production component register, await completion, and transfer the result.
+3. **Test:** start with one locked, empty slot for a non-stackable component. Check Signal; then build the assembler half and verify production and delivery. After that, try two item types and a full-storage state.
 
-Copy each generated `*.js.asm.txt` file as a complete string into the corresponding in-game Behavior import window.
+## Storage-side setup (first test)
 
-## Expected operation
+- Build a storage unit/building with inventory and a way to run a Behavior (such as a Behavior Controller).
+- Fix one empty inventory slot to an item type.
+- Run `uv run python scripts/bsf.py build` at the repository root.
+- Import `build/single-assembler-mall/storage.dcs` into the storage's Behavior Controller.
+- Watch the storage's **Signal** register. It should show the item type of the first missing locked slot. Fill the slot and confirm it clears or moves to the next missing item.
 
-- The storage advertises the item type in its first empty locked slot.
-- The assembler reads that signal and checks if it can produce the item.
-- It sets its production register to request one, then waits until it holds the output.
-- It clears the recipe, orders transfer to storage, and waits until the item leaves.
-- When all storage slots are filled, the assembler stops requesting more items.
+`storage.bsf` uses `get_first_locked_0`, `set_reg`, `wait`, and `restart`, with argument names drawn from the upstream instruction index. **We have not validated the import or runtime behavior in Desynced yet.**
 
-## First in-game test
+## Outstanding
 
-- Check that an empty fixed storage slot makes the storage's Signal show the right item.
-- Check that the assembler's recipe register changes to that component.
-- Confirm the component is produced and transferred to storage.
-- Take it out of storage; confirm the assembler makes another.
-- Fill all locked slots; confirm production stops.
+- Confirm BSF compilation using your installed game data.
+- Confirm storage Signal behavior in game.
+- Author and test `assembler.bsf` with reliable production, transfer, and no duplicate orders.
+- Add recovery handling for missing ingredients and failed deliveries.
+- Update the status after repeatable in-game tests.
 
-## Limits
-
-- **Not yet compiled or tested in Desynced 1.0.** The JS uses names found in [desynced-tools](https://github.com/ribrdb/desynced-tools) instruction metadata, but its definitions may be older than the game. Compilation or in-game behavior may need fixes.
-- The first missing locked slot wins. If its item is unsupported by the assembler, this simple version cannot skip it to make another item.
-- This is *one item per empty locked slot*, not a stock-level manager; do not start with stackable supplies.
-- Missing ingredients or a failed transfer can leave this Behavior waiting. Confirm logistics, haulers, and free space.
-- A new production request isn't started until the finished item is removed from the assembler.
-
-This is a learning baseline: test one item end-to-end before adding more recipes.
+Do not assume an empty fixed slot represents a minimum stock level. This design initially targets one non-stackable component per locked slot.
